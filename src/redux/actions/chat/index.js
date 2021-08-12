@@ -56,7 +56,7 @@ export const getConversations = () => {
               msg: conversations.map((msg) => {
                 return {
                   isSeen: true,
-                  isSent: false,
+                  isSent: msg.messageDirection === 'Outbound',
                   textContent: msg.messageBody,
                   time: moment(msg.updated).format('hh:mm:ss DD-MM-YYYY')
                 }
