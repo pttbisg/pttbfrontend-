@@ -1,17 +1,17 @@
 import React from "react"
-import { 
-  Card, 
-  FormGroup, 
-  Input, 
-  Badge, 
-  Modal, 
+import {
+  Card,
+  FormGroup,
+  Input,
+  Badge,
+  Modal,
   Button,
   ModalHeader,
   ModalBody,
-  ModalFooter, 
-  CardBody, 
-  Row, 
-  Col 
+  ModalFooter,
+  CardBody,
+  Row,
+  Col
 } from "reactstrap"
 import Select from "react-select"
 import { X, Search, Filter } from "react-feather"
@@ -21,7 +21,8 @@ import {
   getChats,
   getContactChats,
   searchContacts,
-  markSeenAllMessages
+  markSeenAllMessages,
+  getConversations
 } from "../../../redux/actions/chat/index"
 import userImg from "../../../assets/img/portrait/small/avatar-s-11.jpg";
 
@@ -63,8 +64,9 @@ class ChatSidebar extends React.Component {
   }
 
   getChatContents = () => {
-    this.props.getChats()
-    this.props.getContactChats()
+    //this.props.getChats()
+    //this.props.getContactChats()
+    this.props.getConversations()
   }
 
   async componentDidMount() {
@@ -108,7 +110,7 @@ class ChatSidebar extends React.Component {
     } else {
       contactsByGroups = this.props.chat.contactsByGroups;
     }
-    this.setState({ 
+    this.setState({
       modal: !this.state.modal,
       contactsByGroups: contactsByGroups
     })
@@ -119,7 +121,7 @@ class ChatSidebar extends React.Component {
     const chatsArr = value.length
       ? this.props.chat.filteredChats
       : data;
-    
+
     return (
       <>
         {chatsArr && Array.isArray(chatsArr)
@@ -316,5 +318,6 @@ export default connect(mapStateToProps, {
   getChats,
   getContactChats,
   searchContacts,
-  markSeenAllMessages
+  markSeenAllMessages,
+  getConversations
 })(ChatSidebar)
