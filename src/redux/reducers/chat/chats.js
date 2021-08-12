@@ -12,13 +12,22 @@ const initialState = {
 
 const chats = (state = initialState, action) => {
   switch (action.type) {
-    case "GET_CONTACTS":
-      return { 
-        ...state, 
-        chats: action.chats, 
+    case "GET_CONVERSATIONS": {
+      return {
+        ...state,
+        chats: action.chats,
         contacts: action.contacts,
         contactsGroups: action.contactsGroups,
-        contactsByGroups: getContactsByGroups(state, action) 
+        contactsByGroups: getContactsByGroups(state, action)
+      }
+    }
+    case "GET_CONTACTS":
+      return {
+        ...state,
+        chats: action.chats,
+        contacts: action.contacts,
+        contactsGroups: action.contactsGroups,
+        contactsByGroups: getContactsByGroups(state, action)
       }
     case "GET_CHAT_CONTACTS":
       return { ...state, chatContacts: action.chats }

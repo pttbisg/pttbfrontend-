@@ -6,6 +6,7 @@ import PerfectScrollbar from "react-perfect-scrollbar"
 import { connect } from "react-redux"
 import { togglePinned, sendMessage } from "../../../redux/actions/chat/index"
 import userImg from "../../../assets/img/portrait/small/avatar-s-11.jpg"
+import parse from "html-react-parser";
 
 class ChatLog extends React.Component {
   static getDerivedStateFromProps(props, state) {
@@ -144,7 +145,7 @@ class ChatLog extends React.Component {
                   }`}>
                   {renderAvatar()}
                   <div className="chat-body">
-                    <div className="chat-content">{chat.textContent}</div>
+                    <div className="chat-content">{parse(chat.textContent)}</div>
                   </div>
                 </div>
               </React.Fragment>
