@@ -40,8 +40,16 @@ export const getConversations = () => {
               photoURL: getPhotoURL(contacts[contactKey][0].messageType),
               status: "offline"
             }
-          })[0]
-        });
+          })
+        }).reduce( (contactsFlattened, item) => {
+          contactsFlattened.push(...item)
+          return contactsFlattened;
+        }, []);
+
+        /*const masterSKUContactsArray = masterSKUContacts.reduce( (contactsFlattened, item) => {
+          contactsFlattened.push(...item)
+          return contactsFlattened;
+        }, []);*/
 
         const chatsArray = Object.values(response.data)
           .map((conversations) => {
@@ -68,6 +76,8 @@ export const getConversations = () => {
           chatsObject[chats.conversationId] = chats;
           return chatsObject;
         }, {});
+
+        console.log({masterSKUContactsGroups},{masterSKUContacts},{chats});
 
         dispatch({
           type: "GET_CONTACTS",
