@@ -1,0 +1,8 @@
+[data-column-id="others"].rdt_TableCol,
+[data-column-id="info"].rdt_TableCol,
+[data-column-id="sales"].rdt_TableCol {
+  background-color: rgba(74, 49, 213, 0.489);
+  border-radius: 0.8rem 0 0 0;
+  color: rgb(78, 78, 78);
+  font-size: 0.8rem;
+}
