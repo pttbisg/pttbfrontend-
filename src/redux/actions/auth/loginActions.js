@@ -1,20 +1,18 @@
 import { history } from "../../../history";
 import axios from "axios";
-import { appConfig, apiConfig } from "../../appConfig/app";
+import { apiConfig } from "../../appConfig/app";
 
 export const loginWithJWT = (user, callback = () => { }) => {
-  let rootURL = apiConfig.rootUrl.replace("{0}", appConfig.appId).replace("{1}", appConfig.apiKey);
+  let loginURL = apiConfig.endpoint.auth.login;
 
-  rootURL += apiConfig.endpoint.auth.login;
   return dispatch => {
     axios
-      .post(rootURL, {
-        login: user.email,
+      .post(loginURL, {
+        email: user.email,
         password: user.password
       })
       .then(response => {
         var loggedInUser;
-
         if (response.data) {
           loggedInUser = response.data;
           localStorage.setItem("user", JSON.stringify(loggedInUser));
@@ -42,18 +40,13 @@ export const loginWithJWT = (user, callback = () => { }) => {
 }
 
 export const logoutWithJWT = (callback = () => { }) => {
-  let rootURL = apiConfig.rootUrl.replace("{0}", appConfig.appId).replace("{1}", appConfig.apiKey);
+  let logoutURL = apiConfig.endpoint.auth.logout;
   let loggedInUser = localStorage.getItem('user');
   if(loggedInUser) loggedInUser = JSON.parse(loggedInUser);
 
-  rootURL += apiConfig.endpoint.auth.logout;
   return dispatch => {
     axios
-      .get(rootURL, {
-        headers: {
-          'user-token': loggedInUser['user-token']
-        }
-      })
+      .post(logoutURL)
       .then(response => {
         if (response) {
           localStorage.removeItem("user");
