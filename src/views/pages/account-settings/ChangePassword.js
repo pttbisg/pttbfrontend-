@@ -2,124 +2,191 @@ import React, { useState } from "react";
 import { Button, FormGroup, Row, Col, Alert } from "reactstrap";
 import { Formik, Field, Form } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
+import { apiConfig } from "../../../redux/appConfig/app";
+
 const formSchema = Yup.object().shape({
-  oldPass: Yup.string().required("Required"),
-  newPass: Yup.string().required("Required"),
-  newPassConfirm: Yup.string()
-    .oneOf([Yup.ref("newPass"), null], "Passwords must match")
+  oldPassword: Yup.string().required("Required"),
+  newPassword: Yup.string().required("Required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
     .required("Required"),
 });
 
-function ChangePassword() {
-  const [visible, setVisible] = useState(true);
-  const [oldPass, setOldPass] = useState("");
-  const [newPass, setNewPass] = useState("");
-  const [newPassConfirm, setNewPassConfirm] = useState("");
-  /*Handlers */
-  const dismissAlert = () => {
-    setVisible(false);
-  };
-  const updatePassWord = () => {
-    if (newPass && oldPass && newPassConfirm) {
-      /*Make sure the password match the confirm password */
-      /*TODO: Compare the password to the one from the DB */
-      /* compare the newPassword to the oldPassword */
-      /*if everything checks update the password */
-    }
-  };
-
-  const handleClear = () => {
-    setNewPass("");
-    setOldPass("");
-    setNewPassConfirm("");
-  };
+function ChangePasswordForm({ isSuccess, setErrorMessage, setIsSuccess }) {
   return (
-    <React.Fragment>
-      <Row className="pt-1">
-        <Col sm="12">
-          <Formik
-            initialValues={{
-              oldPass: "",
-              newPass: "",
-              newPassConfirm: "",
-            }}
-            validationSchema={formSchema}
-          >
-            {({ errors, touched }) => (
-              <Form>
-                <FormGroup>
-                  <Field
-                    name="oldPass"
-                    id="oldPass"
-                    onChange={(e) => setOldPass(e.target.value)}
-                    className={`form-control ${
-                      errors.oldPass && touched.oldPass && "is-invalid"
-                    }`}
-                    placeholder={!oldPass && "Old Password"}
-                    value={oldPass}
-                  />
-                  {errors.oldPass && touched.oldPass ? (
-                    <div className="text-danger">{errors.oldPass}</div>
-                  ) : null}
-                </FormGroup>
-                <FormGroup>
-                  <Field
-                    name="newPass"
-                    placeholder={!newPass && "New Password"}
-                    value={newPass}
-                    id="newPass"
-                    onChange={(e) => setNewPass(e.target.value)}
-                    className={`form-control ${
-                      errors.newPass && touched.newPass && "is-invalid"
-                    }`}
-                  />
-                  {errors.newPass && touched.newPass ? (
-                    <div className="text-danger">{errors.newPassConfirm}</div>
-                  ) : null}
-                </FormGroup>
-                <FormGroup>
-                  <Field
-                    name="newPassConfirm"
-                    id="newPassConfirm"
-                    className={`form-control ${
-                      errors.newPassConfirm &&
-                      touched.newPassConfirm &&
-                      "is-invalid"
-                    }`}
-                    placeholder={!newPassConfirm && "Confirm Password"}
-                    value={newPassConfirm}
-                    onChange={(e) => setNewPassConfirm(e.target.value)}
-                  />
-                  {errors.newPassConfirm && touched.newPassConfirm ? (
-                    <div className="text-danger">{errors.newPassConfirm}</div>
-                  ) : null}
-                </FormGroup>
+    <Formik
+      initialValues={{
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }}
+      validationSchema={formSchema}
+      onSubmit={(values, actions) => {
+        actions.setSubmitting(true);
+        setIsSuccess(false);
+        setErrorMessage("");
 
-                <div className="d-flex justify-content-start flex-wrap">
-                  <Button.Ripple
-                    className="mr-1 mb-1"
-                    color="primary"
-                    type="submit"
-                    onClick={updatePassWord}
-                  >
-                    Save Changes
-                  </Button.Ripple>
-                  <Button.Ripple
-                    className="mb-1"
-                    color="danger"
-                    type="reset"
-                    outline
-                    onClick={handleClear}
-                  >
-                    Cancel
-                  </Button.Ripple>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </Col>
-      </Row>
-    </React.Fragment>
+        const { newPassword, oldPassword, confirmPassword } = values;
+
+        console.log(values);
+
+        if (
+          newPassword &&
+          oldPassword &&
+          confirmPassword &&
+          newPassword === confirmPassword
+        ) {
+          let updatePasswordURL = apiConfig.endpoint.auth.updatePassword;
+
+          axios
+            .patch(
+              updatePasswordURL,
+              {
+                oldPassword,
+                newPassword,
+                confirmPassword,
+              },
+              {
+                headers: {
+                  accessToken: JSON.parse(localStorage.getItem("user"))
+                    .accessToken, //the token is a variable which holds the token
+                },
+              }
+            )
+            .then((response) => {
+              actions.setSubmitting(false);
+
+              const { message, status } = response.data;
+
+              // Validation error or token error
+              if (status) {
+                setErrorMessage(message);
+              } else {
+                actions.resetForm();
+                setIsSuccess(true);
+              }
+            })
+            .catch((errorMessage) => {
+              if (errorMessage.response) {
+                console.log(errorMessage.response, "errorMessage.response");
+                // Request made and server responded
+              } else if (errorMessage.request) {
+                // The request was made but no response was received
+                console.log(errorMessage.request);
+              } else {
+                // Something happened in setting up the request that triggered an errorMessage
+                console.log("errorMessage", errorMessage.message);
+              }
+            });
+        } else actions.setSubmitting(false);
+      }}
+    >
+      {({
+        values,
+        errors,
+        touched,
+        isSubmitting,
+        resetForm,
+        handleChange,
+        handleSubmit,
+      }) => {
+        return (
+          <Form onSubmit={handleSubmit}>
+            <FormGroup>
+              <Field
+                name="oldPassword"
+                id="oldPassword"
+                onChange={handleChange}
+                className={`form-control ${
+                  errors.oldPassword && touched.oldPassword && "is-invalid"
+                }`}
+                placeholder="Old Password"
+                value={values.oldPassword}
+              />
+              {errors.oldPassword && touched.oldPassword ? (
+                <div className="text-danger">{errors.oldPassword}</div>
+              ) : null}
+            </FormGroup>
+            <FormGroup>
+              <Field
+                name="newPassword"
+                id="newPassword"
+                placeholder="New Password"
+                value={values.newPassword}
+                onChange={handleChange}
+                className={`form-control ${
+                  errors.newPassword && touched.newPassword && "is-invalid"
+                }`}
+              />
+              {errors.newPassword && touched.newPassword ? (
+                <div className="text-danger">{errors.newPassword}</div>
+              ) : null}
+            </FormGroup>
+            <FormGroup>
+              <Field
+                name="confirmPassword"
+                id="confirmPassword"
+                className={`form-control ${
+                  errors.confirmPassword &&
+                  touched.confirmPassword &&
+                  "is-invalid"
+                }`}
+                placeholder="Confirm Password"
+                value={values.confirmPassword}
+                onChange={handleChange}
+              />
+              {errors.confirmPassword && touched.confirmPassword ? (
+                <div className="text-danger">{errors.confirmPassword}</div>
+              ) : null}
+            </FormGroup>
+
+            <div className="d-flex justify-content-start flex-wrap">
+              <Button.Ripple
+                className="mr-1 mb-1"
+                color="primary"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                Save Changes
+              </Button.Ripple>
+              <Button.Ripple
+                className="mb-1"
+                color="danger"
+                type="reset"
+                outline
+                onClick={resetForm}
+              >
+                Cancel
+              </Button.Ripple>
+            </div>
+          </Form>
+        );
+      }}
+    </Formik>
+  );
+}
+
+function ChangePassword() {
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  return (
+    <Row className="pt-1">
+      <Col sm="12">
+        <Alert color="success" isOpen={isSuccess}>
+          Your new password have been updated
+        </Alert>
+        <Alert color="danger" isOpen={Boolean(errorMessage)}>
+          {errorMessage}
+        </Alert>
+        <ChangePasswordForm
+          isSuccess={isSuccess}
+          setErrorMessage={setErrorMessage}
+          setIsSuccess={setIsSuccess}
+        />
+      </Col>
+    </Row>
   );
 }
 

@@ -7,9 +7,13 @@ export const apiConfig = {
   rootUrl: "https://api.backendless.com/{0}/{1}/",
   endpoint: {
     auth: {
-      register: "https://kggnq2bkh5.execute-api.ap-southeast-1.amazonaws.com/dev/signup",
-      login: "https://kggnq2bkh5.execute-api.ap-southeast-1.amazonaws.com/dev/login",
-      logout: "https://kggnq2bkh5.execute-api.ap-southeast-1.amazonaws.com/dev/logout",
+      register: "http://localhost:3001/dev/signup",
+      login: "http://localhost:3001/dev/login",
+      logout: "http://localhost:3001/dev/logout",
+      updatePassword: "http://localhost:3001/dev/updatePassword",
+    },
+    account: {
+      updateProfile: "",
     },
     inventory: {
       getInventory:
