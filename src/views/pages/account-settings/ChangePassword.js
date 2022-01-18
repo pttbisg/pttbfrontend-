@@ -6,11 +6,11 @@ import axios from "axios";
 import { apiConfig } from "../../../redux/appConfig/app";
 
 const formSchema = Yup.object().shape({
-  // oldPassword: Yup.string().required("Required"),
-  // newPassword: Yup.string().required("Required"),
-  // confirmPassword: Yup.string()
-  //   .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
-  //   .required("Required"),
+  oldPassword: Yup.string().required("Required"),
+  newPassword: Yup.string().required("Required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
+    .required("Required"),
 });
 
 function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
