@@ -13,7 +13,7 @@ const formSchema = Yup.object().shape({
     .required("Required"),
 });
 
-function ChangePasswordForm({ isSuccess, setErrorMessage, setIsSuccess }) {
+function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
   return (
     <Formik
       initialValues={{
@@ -29,57 +29,48 @@ function ChangePasswordForm({ isSuccess, setErrorMessage, setIsSuccess }) {
 
         const { newPassword, oldPassword, confirmPassword } = values;
 
-        console.log(values);
+        let updatePasswordURL = apiConfig.endpoint.auth.updatePassword;
 
-        if (
-          newPassword &&
-          oldPassword &&
-          confirmPassword &&
-          newPassword === confirmPassword
-        ) {
-          let updatePasswordURL = apiConfig.endpoint.auth.updatePassword;
-
-          axios
-            .patch(
-              updatePasswordURL,
-              {
-                oldPassword,
-                newPassword,
-                confirmPassword,
+        axios
+          .patch(
+            updatePasswordURL,
+            {
+              oldPassword,
+              newPassword,
+              confirmPassword,
+            },
+            {
+              headers: {
+                accessToken: JSON.parse(localStorage.getItem("user"))
+                  .accessToken, //the token is a variable which holds the token
               },
-              {
-                headers: {
-                  accessToken: JSON.parse(localStorage.getItem("user"))
-                    .accessToken, //the token is a variable which holds the token
-                },
-              }
-            )
-            .then((response) => {
-              actions.setSubmitting(false);
+            }
+          )
+          .then((response) => {
+            actions.setSubmitting(false);
 
-              const { message, status } = response.data;
+            const { message, status } = response.data;
 
-              // Validation error or token error
-              if (status) {
-                setErrorMessage(message);
-              } else {
-                actions.resetForm();
-                setIsSuccess(true);
-              }
-            })
-            .catch((errorMessage) => {
-              if (errorMessage.response) {
-                console.log(errorMessage.response, "errorMessage.response");
-                // Request made and server responded
-              } else if (errorMessage.request) {
-                // The request was made but no response was received
-                console.log(errorMessage.request);
-              } else {
-                // Something happened in setting up the request that triggered an errorMessage
-                console.log("errorMessage", errorMessage.message);
-              }
-            });
-        } else actions.setSubmitting(false);
+            // Validation error or token error
+            if (status) {
+              setErrorMessage(message);
+            } else {
+              actions.resetForm();
+              setIsSuccess(true);
+            }
+          })
+          .catch((errorMessage) => {
+            if (errorMessage.response) {
+              console.log(errorMessage.response, "errorMessage.response");
+              // Request made and server responded
+            } else if (errorMessage.request) {
+              // The request was made but no response was received
+              console.log(errorMessage.request);
+            } else {
+              // Something happened in setting up the request that triggered an errorMessage
+              console.log("errorMessage", errorMessage.message);
+            }
+          });
       }}
     >
       {({
@@ -181,7 +172,6 @@ function ChangePassword() {
           {errorMessage}
         </Alert>
         <ChangePasswordForm
-          isSuccess={isSuccess}
           setErrorMessage={setErrorMessage}
           setIsSuccess={setIsSuccess}
         />
