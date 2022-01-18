@@ -6,11 +6,11 @@ import axios from "axios";
 import { apiConfig } from "../../../redux/appConfig/app";
 
 const formSchema = Yup.object().shape({
-  oldPassword: Yup.string().required("Required"),
-  newPassword: Yup.string().required("Required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
-    .required("Required"),
+  // oldPassword: Yup.string().required("Required"),
+  // newPassword: Yup.string().required("Required"),
+  // confirmPassword: Yup.string()
+  //   .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
+  //   .required("Required"),
 });
 
 function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
@@ -49,10 +49,10 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
           .then((response) => {
             actions.setSubmitting(false);
 
-            const { message, status } = response.data;
+            const { message } = response.data;
 
             // Validation error or token error
-            if (status) {
+            if (message) {
               setErrorMessage(message);
             } else {
               actions.resetForm();
