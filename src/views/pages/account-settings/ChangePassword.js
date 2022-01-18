@@ -60,6 +60,8 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
             }
           })
           .catch((errorMessage) => {
+            actions.setSubmitting(false);
+
             if (errorMessage.response) {
               console.log(errorMessage.response, "errorMessage.response");
               // Request made and server responded
