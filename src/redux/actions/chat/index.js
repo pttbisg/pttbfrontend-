@@ -95,39 +95,66 @@ export const getConversations = () => {
           return contactsFlattened;
         }, []);*/
 
-          const chatsGroupByMasterSKU = groupBy(
-            response.data,
-            "master_sku_name"
-          );
+          const chats = response.data.reduce((previousValue, currentValue) => {
+            const masterSKUGroupUid = currentValue.master_sku_name
+              ?.toLowerCase()
+              ?.replace(" ", "_");
+            const currentUid = masterSKUGroupUid + currentValue.mobile_phone;
 
-          // const a = response.data.reduce((previousValue, currentValue) => {
-          //   const masterSKUGroupUid = currentValue.master_sku_name
-          //       ?.toLowerCase()
-          //       ?.replace(" ", "_");
-          //     const currentUid = masterSKUGroupUid + currentValue.mobile_phone;
+            if (previousValue[currentUid]) {
+              previousValue[currentUid].msg = [
+                ...previousValue[currentUid].msg,
+                {
+                  isSeen: true,
+                  isSent: currentValue.message_direction === "Outbound",
+                  textContent: currentValue.message_body,
+                  time: moment(currentValue.created_at).format(
+                    "hh:mm:ss DD-MM-YYYY"
+                  ),
+                },
+              ];
 
-          //   if(previousValue[currentUid)
-          // },
-          // []);
+              return previousValue;
+            } else {
+              previousValue[currentUid] = {
+                isPinned: false,
+                conversationId: currentUid,
+                masterSKUGroupUid,
+                phone: currentValue.mobile_phone,
+                msg: [
+                  {
+                    isSeen: true,
+                    isSent: currentValue.message_direction === "Outbound",
+                    textContent: currentValue.message_body,
+                    time: moment(currentValue.created_at).format(
+                      "hh:mm:ss DD-MM-YYYY"
+                    ),
+                  },
+                ],
+              };
+            }
+
+            return previousValue;
+          }, []);
 
           // console.log(chatsGroupByMasterSKU, "chatsGroupByMasterSKU");
 
-          const chatsArray = response.data.map((conversation) => {
-            return {
-              isPinned: false,
-              conversationId: conversation.mobile_phone,
-              msg: {
-                isSeen: true,
-                isSent: conversation.message_direction === "Outbound",
-                textContent: conversation.message_body,
-                time: moment(conversation.created_at).format(
-                  "hh:mm:ss DD-MM-YYYY"
-                ),
-              },
-            };
-          });
+          // const chatsArray = response.data.map((conversation) => {
+          //   return {
+          //     isPinned: false,
+          //     conversationId: conversation.mobile_phone,
+          //     msg: {
+          //       isSeen: true,
+          //       isSent: conversation.message_direction === "Outbound",
+          //       textContent: conversation.message_body,
+          //       time: moment(conversation.created_at).format(
+          //         "hh:mm:ss DD-MM-YYYY"
+          //       ),
+          //     },
+          //   };
+          // });
 
-          const chats = groupBy(chatsArray, "conversationId");
+          // const chats = groupBy(chatsArray, "conversationId");
 
           console.log(
             { masterSKUContactsGroups },
