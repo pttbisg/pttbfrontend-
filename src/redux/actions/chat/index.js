@@ -15,14 +15,14 @@ export const getConversations = () => {
     axios
       .post(apiConfig.endpoint.conversations.getConversations)
       .then(response => {
-
+        console.log(response.data)
         const masterSKUContactsGroups = Object.keys(response.data).map((tag, masterIndex) => {
           return {
             uid: tag.toLowerCase().replace( ' ', '_'),
             displayName: tag,
             phone: '12345',
             about: 'SKU description',
-            photoURL: getPhotoURL(tag.messageType),
+            photoURL: getPhotoURL(tag.message_type),
             childs: []
           }
         });

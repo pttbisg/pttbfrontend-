@@ -14,7 +14,7 @@ const UserName = props => {
   const user = JSON.parse(localStorage.getItem("user"));
   
   if(user) {
-    username = user.ClientName !== null ? user.ClientName : user.email
+    username = user.email
   } else {
     username = 'Unknown'
   }

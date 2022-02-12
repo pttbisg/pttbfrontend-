@@ -1,14 +1,13 @@
 import { history } from "../../../history"
 import axios from "axios"
-import { apiConfig, appConfig } from "../../appConfig/app";
+import { apiConfig } from "../../appConfig/app";
 
 export const signupWithJWT = (email, password, callback = () => { }) => {
-  let rootURL = apiConfig.rootUrl.replace("{0}", appConfig.appId).replace("{1}", appConfig.apiKey);
-  rootURL += apiConfig.endpoint.auth.register;
+  let signupURL = apiConfig.endpoint.auth.register;
 
   return dispatch => {
     axios
-      .post(rootURL, {
+      .post(signupURL, {
         email: email,
         password: password
       })
