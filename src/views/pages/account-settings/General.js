@@ -1,42 +1,175 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Button,
   Media,
-  Form,
   FormGroup,
-  Input,
   Label,
   Row,
   Col,
+  Spinner,
 } from "reactstrap";
-import img from "../../../assets/img/portrait/small/avatar-s-11.jpg";
-function General() {
-  /*STATES */
-  const [visible, setVisible] = useState(true);
-  const [userName, setUserName] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [company, setCompany] = useState("");
+import { Formik, Field, Form } from "formik";
+import axios from "axios";
+import * as Yup from "yup";
+import { apiConfig } from "../../../redux/appConfig/app";
+// import img from "../../../assets/img/portrait/small/avatar-s-11.jpg";
+
+const formSchema = Yup.object().shape({
+  email: Yup.string().email("Invalid email"),
+});
+
+function EmailConfirmAlert() {
+  const [visible, setVisible] = useState(false);
 
   // HANDLERS
   const dismissAlert = () => {
     setVisible(false);
   };
 
-  /* ON SAVE HANDLER */
-  const handleChange = () => {};
-
-  const handleClear = () => {
-    setCompany("");
-    setEmail("");
-    setName("");
-    setUserName("");
-  };
   return (
-    <React.Fragment>
-      <Media>
-        {/*
+    <Alert
+      className="mb-2"
+      color="warning"
+      isOpen={visible}
+      toggle={dismissAlert}
+    >
+      <p className="mb-0">
+        Your email is not confirmed. Please check your inbox.
+        <span className="text-primary"> Resend Confirmation</span>
+      </p>
+    </Alert>
+  );
+}
+
+const FieldWithLabel = ({
+  id,
+  label,
+  onChange,
+  placeholder,
+  value,
+  error,
+  touched,
+}) => {
+  return (
+    <FormGroup>
+      <Label for={id}>{label}</Label>
+      <Field
+        name={id}
+        id={id}
+        onChange={onChange}
+        className="form-control"
+        className={`form-control ${error && touched && "is-invalid"}`}
+        placeholder={placeholder}
+        value={value}
+      />
+      {error && touched ? <div className="text-danger">{error}</div> : null}
+    </FormGroup>
+  );
+};
+
+function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
+  const { email, new_email } = JSON.parse(localStorage.getItem("user"));
+
+  const defaultInitialValues = {
+    name: profiles.name,
+    email: new_email || email,
+    company: profiles.client_company,
+  };
+
+  const [initialValues, setInitialValues] = useState(defaultInitialValues);
+
+  return (
+    <Formik
+      enableReinitialize
+      initialValues={initialValues}
+      validationSchema={formSchema}
+      onSubmit={(values, actions) => {
+        actions.setSubmitting(true);
+        setIsSuccess(false);
+        setErrorMessage("");
+
+        const { name, email, company } = values;
+
+        let updateProfilesURL = apiConfig.endpoint.client.updateProfiles;
+
+        axios
+          .patch(
+            updateProfilesURL,
+            {
+              name,
+              email,
+              company,
+            },
+            {
+              headers: {
+                accessToken: JSON.parse(localStorage.getItem("user"))
+                  .accessToken, //the token is a variable which holds the token
+              },
+            }
+          )
+          .then((response) => {
+            actions.setSubmitting(false);
+
+            const { user, client, message } = response.data;
+
+            // Validation error or token error
+            if (message) {
+              setErrorMessage(message);
+            } else {
+              let newInitialValues = {};
+
+              if (user) {
+                const { new_email } = user;
+
+                newInitialValues.email = new_email;
+
+                localStorage.setItem("user", JSON.stringify(user));
+              }
+              if (client) {
+                const { client_company, name } = client;
+
+                newInitialValues.company = client_company;
+                newInitialValues.name = name;
+              }
+
+              setInitialValues({
+                ...initialValues,
+                ...newInitialValues,
+              });
+
+              setIsSuccess(true);
+            }
+          })
+          .catch((errorMessage) => {
+            actions.setSubmitting(false);
+
+            if (errorMessage.response) {
+              console.log(errorMessage.response, "errorMessage.response");
+              // Request made and server responded
+            } else if (errorMessage.request) {
+              // The request was made but no response was received
+              console.log(errorMessage.request);
+            } else {
+              // Something happened in setting up the request that triggered an errorMessage
+              console.log("errorMessage", errorMessage.message);
+            }
+          });
+      }}
+    >
+      {({
+        values,
+        errors,
+        touched,
+        isSubmitting,
+        resetForm,
+        handleChange,
+        handleSubmit,
+      }) => {
+        return (
+          <Form onSubmit={handleSubmit}>
+            <Media>
+              {/*
           update profile picture
            <Media className="mr-1" left href="#">
             <Media
@@ -65,82 +198,129 @@ function General() {
               <small>Allowed JPG, GIF or PNG. Max size of 800kB</small>
             </p>
           </Media> */}
-      </Media>
-      <Form className="mt-2" onSubmit={(e) => e.preventDefault()}>
-        <Row>
-          <Col sm="12">
-            <FormGroup>
-              <Label for="userName">Username</Label>
-              <Input
-                id="userName"
-                value={userName}
-                placeholder={!userName && "Daniel Isc"}
-                onChange={(e) => setUserName(e.target.value)}
-              />
-            </FormGroup>
-          </Col>
-          <Col sm="12">
-            <FormGroup>
-              <Label for="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                placeholder={!name && "Daniel chua"}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </FormGroup>
-          </Col>
-          <Col sm="12">
-            <FormGroup>
-              <Label for="email">Email</Label>
-              <Input
-                id="email"
-                value={email}
-                placeholder={!email && "Daniel@interstellargoods.com"}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </FormGroup>
-          </Col>
-          <Col sm="12">
-            <Alert
-              className="mb-2"
-              color="warning"
-              isOpen={visible}
-              toggle={dismissAlert}
-            >
-              <p className="mb-0">
-                Your email is not confirmed. Please check your inbox.
-                <span className="text-primary"> Resend Confirmation</span>
-              </p>
-            </Alert>
-          </Col>
-          <Col sm="12">
-            <FormGroup>
-              <Label for="company">Company</Label>
-              <Input
-                id="company"
-                value={company}
-                placeholder={!company && "interstellargoods"}
-                onChange={(e) => setCompany(e.target.value)}
-              />
-            </FormGroup>
-          </Col>
-          <Col className="d-flex justify-content-start flex-wrap" sm="12">
-            <Button.Ripple
-              className="mr-50"
-              type="submit"
-              color="primary"
-              onClick={handleChange}
-            >
-              Save Changes
-            </Button.Ripple>
-            <Button.Ripple type="reset" color="danger" onClick={handleClear} outline>
-              Cancel 
-            </Button.Ripple>
-          </Col>
-        </Row>
-      </Form>
-    </React.Fragment>
+            </Media>
+            <FieldWithLabel
+              id="name"
+              label="Name"
+              onChange={handleChange}
+              value={values.name}
+              placeholder="Daniel Isc"
+              error={errors.name}
+              touched={touched.name}
+            />
+            <FieldWithLabel
+              id="email"
+              label="Email"
+              onChange={handleChange}
+              value={values.email}
+              placeholder="Daniel@interstellargoods.com"
+              error={errors.email}
+              touched={touched.email}
+            />
+            <EmailConfirmAlert />
+            <FieldWithLabel
+              id="company"
+              label="Company"
+              onChange={handleChange}
+              value={values.company}
+              placeholder="interstellargoods"
+              error={errors.company}
+              touched={touched.company}
+            />
+            <div className="d-flex justify-content-start flex-wrap">
+              <Button.Ripple
+                className="mr-1 mb-1"
+                type="submit"
+                color="primary"
+                disabled={
+                  isSubmitting ||
+                  (!values.name && !values.email && !values.company)
+                }
+              >
+                Save Changes
+              </Button.Ripple>
+              <Button.Ripple
+                className="mb-1"
+                type="reset"
+                color="danger"
+                onClick={resetForm}
+                outline
+              >
+                Cancel
+              </Button.Ripple>
+            </div>
+          </Form>
+        );
+      }}
+    </Formik>
+  );
+}
+
+function General() {
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [profiles, setProfiles] = useState({});
+
+  useEffect(() => {
+    let getProfilesURL = apiConfig.endpoint.client.getProfiles;
+
+    axios
+      .get(getProfilesURL, {
+        headers: {
+          accessToken: JSON.parse(localStorage.getItem("user")).accessToken, //the token is a variable which holds the token
+        },
+      })
+      .then((response) => {
+        const { message } = response.data;
+
+        if (message) {
+          setErrorMessage(message);
+        } else {
+          setProfiles(response.data);
+        }
+
+        setIsLoading(false);
+      })
+      .catch((errorMessage) => {
+        setIsLoading(false);
+
+        if (errorMessage.response) {
+          console.log(errorMessage.response, "errorMessage.response");
+          // Request made and server responded
+        } else if (errorMessage.request) {
+          // The request was made but no response was received
+          console.log(errorMessage.request);
+        } else {
+          // Something happened in setting up the request that triggered an errorMessage
+          console.log("errorMessage", errorMessage.message);
+        }
+      });
+  }, []);
+
+  return (
+    <Row>
+      <Col sm="12">
+        <Alert color="success" isOpen={isSuccess}>
+          Your profiles have been updated
+        </Alert>
+        <Alert color="danger" isOpen={Boolean(errorMessage)}>
+          {errorMessage}
+        </Alert>
+        {isLoading ? (
+          <div className="text-center">
+            <Spinner />
+          </div>
+        ) : (
+          <GeneralForm
+            setErrorMessage={setErrorMessage}
+            setIsSuccess={setIsSuccess}
+            isLoading={isLoading}
+            profiles={profiles}
+          />
+        )}
+      </Col>
+    </Row>
   );
 }
 
