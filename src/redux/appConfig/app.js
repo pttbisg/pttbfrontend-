@@ -19,6 +19,8 @@ export const apiConfig = {
         "https://kggnq2bkh5.execute-api.ap-southeast-1.amazonaws.com/dev/getProfiles",
       updateProfiles:
         "https://kggnq2bkh5.execute-api.ap-southeast-1.amazonaws.com/dev/updateProfiles",
+      updatePassword:
+        "https://kggnq2bkh5.execute-api.ap-southeast-1.amazonaws.com/dev/updatePassword",
     },
     inventory: {
       getInventory:
