@@ -137,25 +137,6 @@ export const getConversations = () => {
             return previousValue;
           }, []);
 
-          // console.log(chatsGroupByMasterSKU, "chatsGroupByMasterSKU");
-
-          // const chatsArray = response.data.map((conversation) => {
-          //   return {
-          //     isPinned: false,
-          //     conversationId: conversation.mobile_phone,
-          //     msg: {
-          //       isSeen: true,
-          //       isSent: conversation.message_direction === "Outbound",
-          //       textContent: conversation.message_body,
-          //       time: moment(conversation.created_at).format(
-          //         "hh:mm:ss DD-MM-YYYY"
-          //       ),
-          //     },
-          //   };
-          // });
-
-          // const chats = groupBy(chatsArray, "conversationId");
-
           console.log(
             { masterSKUContactsGroups },
             { masterSKUContacts },
