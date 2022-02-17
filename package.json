@@ -27,6 +27,7 @@
     "jquery": "~3.4.1",
     "jsonwebtoken": "~8.5.1",
     "leaflet": "^1.6.0",
+    "lodash": "^4.17.21",
     "match-sorter": "~4.0.2",
     "moment": "~2.24.0",
     "namor": "^2.0.2",

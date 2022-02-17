@@ -1,208 +1,274 @@
-import axios from "axios"
-import {apiConfig} from "../../appConfig/app";
+import axios from "axios";
+import { apiConfig } from "../../appConfig/app";
 import moment from "moment";
+import { groupBy } from "lodash";
 
 const getPhotoURL = (type) => {
   if (type === "EMAIL") {
-    return require('../../../assets/img/icons/email.png');
+    return require("../../../assets/img/icons/email.png");
   }
   if (type === "WHATSAPP") {
-    return require('../../../assets/img/icons/whatsapp.png');
+    return require("../../../assets/img/icons/whatsapp.png");
   }
-}
+};
 export const getConversations = () => {
-  return dispatch => {
-    axios
-      .post(apiConfig.endpoint.conversations.getConversations)
-      .then(response => {
-        console.log(response.data)
-        const masterSKUContactsGroups = Object.keys(response.data).map((tag, masterIndex) => {
-          return {
-            uid: tag.toLowerCase().replace( ' ', '_'),
-            displayName: tag,
-            phone: '12345',
-            about: 'SKU description',
-            photoURL: getPhotoURL(tag.message_type),
-            childs: []
-          }
-        });
+  const user = JSON.parse(localStorage.getItem("user"));
 
-        console.log({masterSKUContactsGroups});
+  if (user) {
+    return (dispatch) => {
+      axios
+        .get(
+          apiConfig.endpoint.conversations.getConversations +
+            `?user_id=${user.id}`
+        )
+        .then((response) => {
+          let existingMasterSKUContactsGroupsIds = [];
+          let existingMasterSKUContacts = {};
 
-        const masterSKUContacts = Object.values(response.data).map((contacts, index) => {
-          return Object.keys(contacts).map((contactKey) => {
-            return {
-              uid: contactKey,
-              masterSKUGroupUid: contacts[contactKey][0].tag.toLowerCase().replace(' ', '_'),
-              displayName: contactKey,
-              about: "Master SKU Description",
-              phone: "092345678",
-              photoURL: getPhotoURL(contacts[contactKey][0].messageType),
-              status: "offline"
-            }
-          })
-        }).reduce( (contactsFlattened, item) => {
-          contactsFlattened.push(...item)
-          return contactsFlattened;
-        }, []);
+          let masterSKUContactsGroups = response.data.reduce(
+            (previousValue, currentValue) => {
+              const currentUid = currentValue.master_sku_name
+                ?.toLowerCase()
+                ?.replace(" ", "_");
 
-        /*const masterSKUContactsArray = masterSKUContacts.reduce( (contactsFlattened, item) => {
+              if (existingMasterSKUContactsGroupsIds.includes(currentUid)) {
+                return previousValue;
+              } else {
+                existingMasterSKUContactsGroupsIds.push(currentUid);
+
+                return [
+                  ...previousValue,
+                  {
+                    uid: currentUid,
+                    displayName: currentValue.master_sku_name,
+                    about: "SKU description",
+                    childs: [],
+                  },
+                ];
+              }
+            },
+            []
+          );
+
+          const masterSKUContacts = response.data.reduce(
+            (previousValue, currentValue) => {
+              const masterSKUGroupUid = currentValue.master_sku_name
+                ?.toLowerCase()
+                ?.replace(" ", "_");
+              const currentUid = masterSKUGroupUid + currentValue.mobile_phone;
+
+              if (
+                existingMasterSKUContacts[currentUid]?.includes(
+                  masterSKUGroupUid
+                )
+              ) {
+                return previousValue;
+              } else {
+                if (existingMasterSKUContacts[currentUid]) {
+                  existingMasterSKUContacts[currentUid] = [
+                    ...existingMasterSKUContacts[currentUid],
+                    masterSKUGroupUid,
+                  ];
+                } else {
+                  existingMasterSKUContacts[currentUid] = [masterSKUGroupUid];
+                }
+
+                return [
+                  ...previousValue,
+                  {
+                    uid: currentUid,
+                    masterSKUGroupUid,
+                    displayName: currentValue.mobile_phone,
+                    about: "Master SKU Description",
+                    phone: currentValue.mobile_phone,
+                    photoURL: getPhotoURL(currentValue.message_type),
+                    status: "offline",
+                  },
+                ];
+              }
+            },
+            []
+          );
+
+          /*const masterSKUContactsArray = masterSKUContacts.reduce( (contactsFlattened, item) => {
           contactsFlattened.push(...item)
           return contactsFlattened;
         }, []);*/
 
-        const chatsArray = Object.values(response.data)
-          .map((conversations) => {
-            return Object.values(conversations)
-          })
-          .flat()
-          .map((conversations) => {
+          const chats = response.data.reduce((previousValue, currentValue) => {
+            const masterSKUGroupUid = currentValue.master_sku_name
+              ?.toLowerCase()
+              ?.replace(" ", "_");
+            const currentUid = masterSKUGroupUid + currentValue.mobile_phone;
 
-            return {
-              isPinned: false,
-              conversationId: conversations[0].conversationId,
-              msg: conversations.map((msg) => {
-                return {
+            if (previousValue[currentUid]) {
+              previousValue[currentUid].msg = [
+                ...previousValue[currentUid].msg,
+                {
                   isSeen: true,
-                  isSent: msg.messageDirection === 'Outbound',
-                  textContent: msg.messageBody,
-                  time: moment(msg.updated).format('hh:mm:ss DD-MM-YYYY')
-                }
-              })
+                  isSent: currentValue.message_direction === "Outbound",
+                  textContent: currentValue.message_body,
+                  time: moment(currentValue.created_at).format(
+                    "hh:mm:ss DD-MM-YYYY"
+                  ),
+                },
+              ];
+
+              return previousValue;
+            } else {
+              previousValue[currentUid] = {
+                isPinned: false,
+                conversationId: currentUid,
+                masterSKUGroupUid,
+                phone: currentValue.mobile_phone,
+                msg: [
+                  {
+                    isSeen: true,
+                    isSent: currentValue.message_direction === "Outbound",
+                    textContent: currentValue.message_body,
+                    time: moment(currentValue.created_at).format(
+                      "hh:mm:ss DD-MM-YYYY"
+                    ),
+                  },
+                ],
+              };
             }
-          })
 
-        const chats = chatsArray.reduce((chatsObject, chats) => {
-          chatsObject[chats.conversationId] = chats;
-          return chatsObject;
-        }, {});
+            return previousValue;
+          }, []);
 
-        console.log({masterSKUContactsGroups},{masterSKUContacts},{chats});
+          console.log(
+            { masterSKUContactsGroups },
+            { masterSKUContacts },
+            { chats }
+          );
 
-        dispatch({
-          type: "GET_CONTACTS",
-          contacts: masterSKUContacts,
-          contactsGroups: masterSKUContactsGroups,
-          chats: chats
+          dispatch({
+            type: "GET_CONTACTS",
+            contacts: masterSKUContacts,
+            contactsGroups: masterSKUContactsGroups,
+            chats: chats,
+          });
         })
-
-      })
-      .catch(err => console.log(err))
+        .catch((err) => console.log(err));
+    };
   }
-}
+
+  return [];
+};
 
 export const getChats = () => {
-  return dispatch => {
+  return (dispatch) => {
     axios
       .get("api/app/chat/chats")
-      .then(response => {
-        console.log('getChats', response);
+      .then((response) => {
+        console.log("getChats", response);
         dispatch({
           type: "GET_CONTACTS",
           contacts: response.data.masterSKUContacts,
           contactsGroups: response.data.masterSKUContactsGroups,
-          chats: []//response.data.chats
-        })
+          chats: [], //response.data.chats
+        });
       })
-      .catch(err => console.log(err))
-  }
-}
+      .catch((err) => console.log(err));
+  };
+};
 
 export const getContactChats = () => {
-  return dispatch => {
+  return (dispatch) => {
     axios
       .get("api/app/chat/chat-contacts")
-      .then(response => {
-        console.log('GET_CHAT_CONTACTS', response)
+      .then((response) => {
+        console.log("GET_CHAT_CONTACTS", response);
         dispatch({
           type: "GET_CHAT_CONTACTS",
-          chats: response.data
-        })
+          chats: response.data,
+        });
       })
-      .catch(err => console.log(err))
-  }
-}
+      .catch((err) => console.log(err));
+  };
+};
 
 export const togglePinned = (id, value) => {
-  return dispatch => {
+  return (dispatch) => {
     axios
       .post("/api/apps/chat/set-pinned/", {
         contactId: id,
-        value
+        value,
       })
-      .then(response => {
+      .then((response) => {
         dispatch({
           type: "SET_PINNED",
           id,
-          value
-        })
+          value,
+        });
       })
-      .catch(err => console.log(err))
-  }
-}
+      .catch((err) => console.log(err));
+  };
+};
 
 export const sendMessage = (id, isPinned, text) => {
   if (text.length > 0) {
-    return dispatch => {
+    return (dispatch) => {
       let newMsg = {
         textContent: text,
         isSent: true,
         isSeen: false,
-        time: new Date().toString()
-      }
+        time: new Date().toString(),
+      };
       axios
         .post("/api/app/chat/send-message", {
           contactId: id,
           message: newMsg,
-          isPinned
+          isPinned,
         })
-        .then(response => {
+        .then((response) => {
           dispatch({
             type: "SEND_MESSAGE",
             msg: newMsg,
             id,
             isPinned,
-            text
-          })
-          dispatch(getChats())
+            text,
+          });
+          dispatch(getChats());
         })
-        .catch(err => console.log(err))
-    }
+        .catch((err) => console.log(err));
+    };
   } else {
-    return
+    return;
   }
-}
+};
 
-export const changeStatus = status => {
-  return dispatch => {
+export const changeStatus = (status) => {
+  return (dispatch) => {
     dispatch({
       type: "CHANGE_STATUS",
-      status
-    })
-  }
-}
+      status,
+    });
+  };
+};
 
-export const searchContacts = query => {
-  return dispatch => {
+export const searchContacts = (query) => {
+  return (dispatch) => {
     dispatch({
       type: "SEARCH_CONTACTS",
-      query
-    })
-  }
-}
+      query,
+    });
+  };
+};
 
-export const markSeenAllMessages = id => {
-  return dispatch => {
+export const markSeenAllMessages = (id) => {
+  return (dispatch) => {
     axios
       .post("/api/apps/chat/mark-all-seen/", {
-        contactId: id
+        contactId: id,
       })
-      .then(response => {
+      .then((response) => {
         dispatch({
           type: "MARK_AS_SEEN",
-          id
-        })
+          id,
+        });
       })
-      .catch(err => console.log(err))
-  }
-}
+      .catch((err) => console.log(err));
+  };
+};
