@@ -4,6 +4,7 @@ import { Formik, Field, Form } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { apiConfig } from "../../../redux/appConfig/app";
+import { APIErrorHandler } from "../../../extensions/functions/error";
 
 const formSchema = Yup.object().shape({
   oldPassword: Yup.string().required("Required"),
@@ -47,20 +48,20 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
             }
           )
           .then((response) => {
-            actions.setSubmitting(false);
-
-            const { message } = response.data;
-
-            // Validation error or token error
-            if (message) {
-              setErrorMessage(message);
-            } else {
+            // Just for RPC function in supabase
+            // If return true means no expired token error
+            if (APIErrorHandler(response.data)) {
+              console.log("not here");
+              actions.setSubmitting(false);
               actions.resetForm();
               setIsSuccess(true);
             }
           })
           .catch((errorMessage) => {
             actions.setSubmitting(false);
+            setErrorMessage(errorMessage.response?.data?.message);
+
+            APIErrorHandler(errorMessage.response?.data);
 
             if (errorMessage.response) {
               console.log(errorMessage.response, "errorMessage.response");
@@ -178,6 +179,7 @@ function ChangePassword() {
           setIsSuccess={setIsSuccess}
         />
       </Col>
+      <ToastContainer />
     </Row>
   );
 }
