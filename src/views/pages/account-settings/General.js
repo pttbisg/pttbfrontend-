@@ -51,6 +51,7 @@ const FieldWithLabel = ({
   value,
   error,
   touched,
+  disabled,
 }) => {
   return (
     <FormGroup>
@@ -63,6 +64,7 @@ const FieldWithLabel = ({
         className={`form-control ${error && touched && "is-invalid"}`}
         placeholder={placeholder}
         value={value}
+        disabled={disabled}
       />
       {error && touched ? <div className="text-danger">{error}</div> : null}
     </FormGroup>
@@ -90,7 +92,7 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
         setIsSuccess(false);
         setErrorMessage("");
 
-        const { name, email, company } = values;
+        const { name, company } = values;
 
         let updateProfilesURL = apiConfig.endpoint.client.updateProfiles;
 
@@ -99,7 +101,6 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
             updateProfilesURL,
             {
               name,
-              email,
               company,
             },
             {
@@ -112,27 +113,14 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
           .then((response) => {
             actions.setSubmitting(false);
 
-            const { user, client, message } = response.data;
+            // If return true means no expired token error
+            if (APIErrorHandler(response.data)) {
+              const { client_company, name } = response.data;
 
-            // Validation error or token error
-            if (message) {
-              setErrorMessage(message);
-            } else {
               let newInitialValues = {};
 
-              if (user) {
-                const { new_email } = user;
-
-                newInitialValues.email = new_email;
-
-                localStorage.setItem("user", JSON.stringify(user));
-              }
-              if (client) {
-                const { client_company, name } = client;
-
-                newInitialValues.company = client_company;
-                newInitialValues.name = name;
-              }
+              newInitialValues.company = client_company;
+              newInitialValues.name = name;
 
               setInitialValues({
                 ...initialValues,
@@ -146,7 +134,7 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
             actions.setSubmitting(false);
 
             if (errorMessage.response) {
-              
+              setErrorMessage(errorMessage.response.data?.message);
               // Request made and server responded
             } else if (errorMessage.request) {
               // The request was made but no response was received
@@ -217,6 +205,7 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
               placeholder="Daniel@interstellargoods.com"
               error={errors.email}
               touched={touched.email}
+              disabled
             />
             <EmailConfirmAlert />
             <FieldWithLabel
