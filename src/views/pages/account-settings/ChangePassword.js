@@ -48,10 +48,8 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
             }
           )
           .then((response) => {
-            // Just for RPC function in supabase
             // If return true means no expired token error
             if (APIErrorHandler(response.data)) {
-              console.log("not here");
               actions.setSubmitting(false);
               actions.resetForm();
               setIsSuccess(true);
@@ -59,12 +57,9 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
           })
           .catch((errorMessage) => {
             actions.setSubmitting(false);
-            setErrorMessage(errorMessage.response?.data?.message);
-
-            APIErrorHandler(errorMessage.response?.data);
-
+        
             if (errorMessage.response) {
-              console.log(errorMessage.response, "errorMessage.response");
+              setErrorMessage(errorMessage.response.data?.message);
               // Request made and server responded
             } else if (errorMessage.request) {
               // The request was made but no response was received

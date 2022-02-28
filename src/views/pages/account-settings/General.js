@@ -14,6 +14,7 @@ import axios from "axios";
 import * as Yup from "yup";
 import { apiConfig } from "../../../redux/appConfig/app";
 // import img from "../../../assets/img/portrait/small/avatar-s-11.jpg";
+import { APIErrorHandler } from '../../../extensions/functions/error';
 
 const formSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email"),
@@ -145,7 +146,7 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
             actions.setSubmitting(false);
 
             if (errorMessage.response) {
-              console.log(errorMessage.response, "errorMessage.response");
+              
               // Request made and server responded
             } else if (errorMessage.request) {
               // The request was made but no response was received
@@ -272,21 +273,17 @@ function General() {
         },
       })
       .then((response) => {
-        const { message } = response.data;
-
-        if (message) {
-          setErrorMessage(message);
-        } else {
+        // If return true means no expired token error
+        if (APIErrorHandler(response.data)) {
           setProfiles(response.data);
+          setIsLoading(false);
         }
-
-        setIsLoading(false);
       })
       .catch((errorMessage) => {
         setIsLoading(false);
 
         if (errorMessage.response) {
-          console.log(errorMessage.response, "errorMessage.response");
+          setErrorMessage(errorMessage.response?.data?.message);
           // Request made and server responded
         } else if (errorMessage.request) {
           // The request was made but no response was received
