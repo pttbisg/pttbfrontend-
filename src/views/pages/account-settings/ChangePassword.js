@@ -179,7 +179,6 @@ function ChangePassword() {
           setIsSuccess={setIsSuccess}
         />
       </Col>
-      <ToastContainer />
     </Row>
   );
 }
