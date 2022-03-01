@@ -13,6 +13,8 @@ COPY package.json ./
 RUN yarn install --silent
 #RUN npm install react-scripts@3.4.1 -g --silent
 
+COPY .env .env
+
 # add app
 COPY . ./
 
