@@ -41,8 +41,6 @@ export const loginWithJWT = (user, callback = () => { }) => {
 
 export const logoutWithJWT = (callback = () => { }) => {
   let logoutURL = apiConfig.endpoint.auth.logout;
-  let loggedInUser = localStorage.getItem('user');
-  if(loggedInUser) loggedInUser = JSON.parse(loggedInUser);
 
   return dispatch => {
     axios
