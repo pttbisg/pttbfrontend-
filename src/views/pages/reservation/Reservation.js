@@ -10,6 +10,7 @@ import { generateInventoryOfCurrentUserExport } from "../../tables/react-tables/
 import { inventoryByUser } from "../../../redux/actions/reservation";
 import CustomLoadingCellRenderer from "./CustomLoadingCellRenderer";
 import MasterSKUCustomCellRenderer from "./MasterSKUCustomCellRenderer";
+import ReservationOrder from "./ReservationOrder";
 import XLSX from "xlsx";
 import * as FileSaver from "file-saver";
 import "../../../assets/scss/pages/invoice.scss";
@@ -330,8 +331,13 @@ class Reservation extends React.Component {
                           Header: "Balance Stock Left",
                           accessor: "quantity",
                         },
+                        {
+                          Cell: ({ original }) => {
+                            return <ReservationOrder {...original} />;
+                          },
+                        },
                       ]}
-                      defaultPageSize={1}
+                      defaultPageSize={5}
                       className="striped highlight w-full"
                       page={this.state.page}
                       pageSize={this.state.pageSize}
