@@ -196,6 +196,9 @@ const accessControl = lazy(() =>
   import("./extensions/access-control/AccessControl")
 );
 const inventoryPage = lazy(() => import("./views/pages/inventory/Inventory"));
+const reservationPage = lazy(() =>
+  import("./views/pages/reservation/Reservation")
+);
 
 // Set Layout and Component Using App Route
 const RouteConfig = ({ component: Component, fullLayout, ...rest }) => (
@@ -428,6 +431,7 @@ class AppRouter extends React.Component {
           />
           <AppRoute path="/extensions/pagination" component={reactPaginate} />
           <AppRoute path="/pages/inventory" component={inventoryPage} />
+          <AppRoute path="/pages/reservation" component={reservationPage} />
           <AppRoute component={error404} fullLayout />
         </Switch>
       </Router>
