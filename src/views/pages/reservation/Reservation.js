@@ -1,8 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { connect } from "react-redux";
-import DataTablePagination from "../../tables/data-tables/DataTablePagination";
-import DataTableCustomBK from "../../tables/data-tables/DataTableCustomBK";
 import { Card, CardBody, Input, Button, Col } from "reactstrap";
 import { RefreshCcw } from "react-feather";
 import "../../../assets/scss/pages/invoice.scss";
