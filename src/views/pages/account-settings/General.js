@@ -14,7 +14,7 @@ import axios from "axios";
 import * as Yup from "yup";
 import { apiConfig } from "../../../redux/appConfig/app";
 // import img from "../../../assets/img/portrait/small/avatar-s-11.jpg";
-import { APIErrorHandler } from '../../../extensions/functions/error';
+import { APIErrorHandler } from "../../../extensions/functions/error";
 
 const formSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email"),
@@ -105,7 +105,7 @@ function GeneralForm({ profiles, setErrorMessage, setIsSuccess }) {
             },
             {
               headers: {
-                accessToken: JSON.parse(localStorage.getItem("user"))
+                accesstoken: JSON.parse(localStorage.getItem("user"))
                   .accessToken, //the token is a variable which holds the token
               },
             }
@@ -258,7 +258,7 @@ function General() {
     axios
       .get(getProfilesURL, {
         headers: {
-          accessToken: JSON.parse(localStorage.getItem("user")).accessToken, //the token is a variable which holds the token
+          accesstoken: JSON.parse(localStorage.getItem("user")).accessToken,
         },
       })
       .then((response) => {

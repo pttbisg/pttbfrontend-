@@ -42,7 +42,7 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
             },
             {
               headers: {
-                accessToken: JSON.parse(localStorage.getItem("user"))
+                accesstoken: JSON.parse(localStorage.getItem("user"))
                   .accessToken, //the token is a variable which holds the token
               },
             }
@@ -57,7 +57,7 @@ function ChangePasswordForm({ setErrorMessage, setIsSuccess }) {
           })
           .catch((errorMessage) => {
             actions.setSubmitting(false);
-        
+
             if (errorMessage.response) {
               setErrorMessage(errorMessage.response.data?.message);
               // Request made and server responded
