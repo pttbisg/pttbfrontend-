@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import FieldWithLabel from "../../ui-elements/field/FieldWithLabel";
+import FieldWithDatePicker from "../../ui-elements/field/FieldWithDatePicker";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
@@ -77,6 +78,7 @@ const OrderForm = ({ toggle }) => {
         isSubmitting,
         resetForm,
         handleChange,
+        setFieldValue,
         handleSubmit,
       }) => {
         return (
@@ -147,10 +149,10 @@ const OrderForm = ({ toggle }) => {
                   touched={touched.deliveryNotes}
                   as="textarea"
                 />
-                <FieldWithLabel
+                <FieldWithDatePicker
                   id="deliveryDate"
                   label="Delivery date"
-                  onChange={handleChange}
+                  onChange={setFieldValue}
                   value={values.deliveryDate}
                   placeholder="Enter delivery date"
                   error={errors.deliveryDate}
