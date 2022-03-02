@@ -1,22 +1,36 @@
-# pull official base image
-# pull official base image
-FROM node:13.12.0-alpine
+# =============================================
+# Base image
+# =============================================
 
-# set working directory
+FROM node:14.15.0-alpine AS base
+
+ENV YARN_CACHE /vendor/yarn
+
+RUN mkdir -p $YARN_CACHE
+
+WORKDIR /vendor
+
+# Cache and install dependencies
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install --frozen-lockfile --cache-folder $YARN_CACHE
+
 WORKDIR /app
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
+RUN ln -s /vendor/node_modules ./node_modules
 
-# install app dependencies
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm install --silent
-RUN npm install react-scripts@3.4.1 -g --silent
+# =============================================
+# Application image
+# =============================================
+FROM base AS app
 
-# add app
-COPY . ./
+ARG SOURCE_VERSION
+ENV SOURCE_VERSION=$SOURCE_VERSION
 
-# start app
-EXPOSE 12345
-CMD ["npm", "start"]
+COPY .env .env
+
+# Copy app files
+COPY . .
+
+# Build
+RUN yarn build
