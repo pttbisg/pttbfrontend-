@@ -98,8 +98,6 @@ class Reservation extends React.Component {
   render() {
     let { data, isLoading } = this.state;
 
-    console.log(data, "data");
-
     data = this.filterAvailableMasterSKU(data);
 
     return (
