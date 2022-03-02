@@ -73,7 +73,8 @@ const OrderForm = ({ masterSKU, toggle, quantity, setState, data }) => {
               const { message, availableQuantiy } = e;
 
               setErrorMessage(message);
-              setCurrentQuantity(availableQuantiy);
+              if (availableQuantiy !== null)
+                setCurrentQuantity(availableQuantiy);
               actions.setSubmitting(false);
             }
           )
