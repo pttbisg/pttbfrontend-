@@ -1,20 +1,58 @@
 import React, { useState } from "react";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Alert,
+} from "reactstrap";
 import FieldWithLabel from "../../ui-elements/field/FieldWithLabel";
 import FieldWithDatePicker from "../../ui-elements/field/FieldWithDatePicker";
+import { createReservation } from "../../../redux/actions/reservation";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { useDispatch } from "react-redux";
 
 const formSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email"),
+  quantity: Yup.number().required().positive().integer(),
+  name: Yup.string().required("Required"),
+  address: Yup.string().required("Required"),
+  postalCode: Yup.number().required().positive().integer(),
+  zipcode: Yup.number().required().positive().integer(),
+  deliveryDate: Yup.date().min(new Date()).required("Required"),
+  linktableMastersku: Yup.string().required("Required"),
 });
 
-const OrderForm = ({ toggle }) => {
-  const handleSubmit = () => {};
+const OrderForm = ({ masterSKU, toggle, quantity, setState, data }) => {
+  const [currentQuantity, setCurrentQuantity] = useState(quantity);
+  const [errorMessage, setErrorMessage] = useState("");
+  const dispatch = useDispatch();
 
   const [initialValues] = useState({
+    quantity: "",
     name: "",
+    company: "",
+    address: "",
+    postalCode: "",
+    zipcode: "",
+    deliveryNotes: "",
+    deliveryDate: null,
+    linktableMastersku: masterSKU,
   });
+
+  const updateParentState = (newQuantity) => {
+    const dataIndex = data.findIndex((item) => item.masterSKU === masterSKU);
+
+    const tempData = [...data];
+
+    tempData[dataIndex] = {
+      ...tempData[dataIndex],
+      quantity: newQuantity,
+    };
+
+    setState({ data: tempData });
+  };
 
   return (
     <Formik
@@ -22,53 +60,24 @@ const OrderForm = ({ toggle }) => {
       initialValues={initialValues}
       validationSchema={formSchema}
       onSubmit={(values, actions) => {
-        // actions.setSubmitting(true);
-        // setIsSuccess(false);
-        // setErrorMessage("");
-        // const { name, company } = values;
-        // let updateProfilesURL = apiConfig.endpoint.client.updateProfiles;
-        // axios
-        //   .patch(
-        //     updateProfilesURL,
-        //     {
-        //       name,
-        //       company,
-        //     },
-        //     {
-        //       headers: {
-        //         accesstoken: JSON.parse(localStorage.getItem("user"))
-        //           .accessToken, //the token is a variable which holds the token
-        //       },
-        //     }
-        //   )
-        //   .then((response) => {
-        //     actions.setSubmitting(false);
-        //     // If return true means no expired token error
-        //     if (APIErrorHandler(response.data)) {
-        //       const { client_company, name } = response.data;
-        //       let newInitialValues = {};
-        //       newInitialValues.company = client_company;
-        //       newInitialValues.name = name;
-        //       setInitialValues({
-        //         ...initialValues,
-        //         ...newInitialValues,
-        //       });
-        //       setIsSuccess(true);
-        //     }
-        //   })
-        //   .catch((errorMessage) => {
-        //     actions.setSubmitting(false);
-        //     if (errorMessage.response) {
-        //       setErrorMessage(errorMessage.response.data?.message);
-        //       // Request made and server responded
-        //     } else if (errorMessage.request) {
-        //       // The request was made but no response was received
-        //       console.log(errorMessage.request);
-        //     } else {
-        //       // Something happened in setting up the request that triggered an errorMessage
-        //       console.log("errorMessage", errorMessage.message);
-        //     }
-        //   });
+        dispatch(
+          createReservation(
+            values,
+            (res) => {
+              const { availableQuantiy } = res;
+
+              toggle();
+              updateParentState(availableQuantiy);
+            },
+            (e) => {
+              const { message, availableQuantiy } = e;
+
+              setErrorMessage(message);
+              setCurrentQuantity(availableQuantiy);
+              actions.setSubmitting(false);
+            }
+          )
+        );
       }}
     >
       {({
@@ -76,7 +85,6 @@ const OrderForm = ({ toggle }) => {
         errors,
         touched,
         isSubmitting,
-        resetForm,
         handleChange,
         setFieldValue,
         handleSubmit,
@@ -84,7 +92,13 @@ const OrderForm = ({ toggle }) => {
         return (
           <>
             <ModalBody>
+              <Alert color="danger" isOpen={Boolean(errorMessage)}>
+                {errorMessage}
+              </Alert>
               <Form onSubmit={handleSubmit}>
+                <p className="text-right">
+                  Current quantity: {currentQuantity}
+                </p>
                 <FieldWithLabel
                   id="quantity"
                   label="Quantiy"
@@ -158,16 +172,16 @@ const OrderForm = ({ toggle }) => {
                   error={errors.deliveryDate}
                   touched={touched.deliveryDate}
                 />
+                <ModalFooter>
+                  <Button color="primary" type="submit" disabled={isSubmitting}>
+                    Place order
+                  </Button>
+                  <Button color="secondary" onClick={toggle}>
+                    Cancel
+                  </Button>
+                </ModalFooter>
               </Form>
             </ModalBody>
-            <ModalFooter>
-              <Button color="primary" onClick={toggle}>
-                Place order
-              </Button>
-              <Button color="secondary" onClick={toggle}>
-                Cancel
-              </Button>
-            </ModalFooter>
           </>
         );
       }}
@@ -175,7 +189,7 @@ const OrderForm = ({ toggle }) => {
   );
 };
 
-const ReservationOrder = ({ masterSKU, quantity }) => {
+const ReservationOrder = ({ masterSKU, quantity, setState, data }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = () => {
@@ -189,7 +203,13 @@ const ReservationOrder = ({ masterSKU, quantity }) => {
       </Button.Ripple>
       <Modal isOpen={isOpen} toggle={toggle}>
         <ModalHeader toggle={toggle}>Reservation order</ModalHeader>
-        <OrderForm toggle={toggle} />
+        <OrderForm
+          toggle={toggle}
+          masterSKU={masterSKU}
+          quantity={quantity}
+          setState={setState}
+          data={data}
+        />
       </Modal>
     </>
   );

@@ -20,7 +20,6 @@ const FieldWithLabel = ({
         name={id}
         id={id}
         onChange={onChange}
-        className="form-control"
         className={`form-control ${error && touched && "is-invalid"}`}
         placeholder={placeholder}
         value={value}

@@ -6,7 +6,7 @@ import { RefreshCcw } from "react-feather";
 import "../../../assets/scss/pages/invoice.scss";
 import "../../../assets/scss/plugins/tables/_agGridStyleOverride.scss";
 import Breadcrumbs from "../../../components/@vuexy/breadCrumbs/BreadCrumb";
-import { inventoryByUser } from "../../../redux/actions/reservation";
+import { inventoryByUser } from "../../../redux/actions/inventory";
 import CustomLoadingCellRenderer from "./CustomLoadingCellRenderer";
 import MasterSKUCustomCellRenderer from "./MasterSKUCustomCellRenderer";
 import ReservationOrder from "./ReservationOrder";
@@ -98,6 +98,8 @@ class Reservation extends React.Component {
   render() {
     let { data, isLoading } = this.state;
 
+    console.log(data, "data");
+
     data = this.filterAvailableMasterSKU(data);
 
     return (
@@ -154,7 +156,13 @@ class Reservation extends React.Component {
                         },
                         {
                           Cell: ({ original }) => {
-                            return <ReservationOrder {...original} />;
+                            return (
+                              <ReservationOrder
+                                {...original}
+                                setState={this.setState.bind(this)}
+                                data={data}
+                              />
+                            );
                           },
                         },
                       ]}

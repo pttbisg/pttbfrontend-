@@ -12,6 +12,7 @@ const {
   REACT_APP_USER_UPDATE_PROFILES_ENDPOINT,
   REACT_APP_USER_INVENTORY_ENDPOINT,
   REACT_APP_USER_CONVERSATIONS_ENDPOINT,
+  REACT_APP_USER_RESERVATION_ENDPOINT,
 } = process.env;
 
 export const apiConfig = {
@@ -34,6 +35,9 @@ export const apiConfig = {
     },
     conversations: {
       getConversations: REACT_APP_USER_CONVERSATIONS_ENDPOINT,
+    },
+    reservation: {
+      createReservation: REACT_APP_USER_RESERVATION_ENDPOINT,
     },
   },
 };
