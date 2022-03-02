@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { connect } from "react-redux";
 import { Card, CardBody, Input, Button, Col } from "reactstrap";
-import { RefreshCcw } from "react-feather";
+import { RefreshCcw, X } from "react-feather";
 import "../../../assets/scss/pages/invoice.scss";
 import "../../../assets/scss/plugins/tables/_agGridStyleOverride.scss";
 import Breadcrumbs from "../../../components/@vuexy/breadCrumbs/BreadCrumb";
@@ -45,6 +45,7 @@ class Reservation extends React.Component {
     fileName: "",
     fileFormat: "csv",
     dataExport: [],
+    searchString: "",
   };
 
   componentDidMount() {
@@ -77,18 +78,7 @@ class Reservation extends React.Component {
   };
 
   updateSearchQuery = (val) => {
-    this.gridApi.setQuickFilter(val);
-    let gridRowNode = this.gridApi.getModel();
-    let filteredData = [];
-    if (gridRowNode) {
-      let rows = gridRowNode.rowsToDisplay;
-      rows.map((r) => {
-        filteredData.push(r.data);
-      });
-      this.setState({
-        data: filteredData,
-      });
-    }
+    this.setState({ searchString: val });
   };
 
   filterAvailableMasterSKU = (array) => {
@@ -96,9 +86,15 @@ class Reservation extends React.Component {
   };
 
   render() {
-    let { data, isLoading } = this.state;
+    let { data, isLoading, searchString } = this.state;
 
     data = this.filterAvailableMasterSKU(data);
+
+    data = searchString
+      ? data.filter((item) =>
+          item.masterSKU.toLowerCase().match(searchString.toLowerCase())
+        )
+      : data;
 
     return (
       <React.Fragment>
