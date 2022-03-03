@@ -7,14 +7,19 @@ export const createReservation = (
   errorCallback = () => {}
 ) => {
   let rootURL = apiConfig.endpoint.reservation.createReservation;
+  const { id: userId, accessToken } = JSON.parse(localStorage.getItem("user"));
 
   return (dispatch) => {
     axios
-      .post(rootURL, values, {
-        headers: {
-          accesstoken: JSON.parse(localStorage.getItem("user")).accessToken, //the token is a variable which holds the token
-        },
-      })
+      .post(
+        rootURL,
+        { ...values, userId },
+        {
+          headers: {
+            accesstoken: accessToken, //the token is a variable which holds the token
+          },
+        }
+      )
       .then((response) => {
         if (response.data) {
           successCallback(response.data);
