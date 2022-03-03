@@ -10,6 +10,14 @@ const navigationConfig = [
     permissions: ["admin", "editor"],
   },
   {
+    id: "reservation",
+    title: "Reservation",
+    type: "item",
+    icon: <Icon.Box size={20} />,
+    permissions: ["admin", "editor"],
+    navLink: "/pages/reservation",
+  },
+  {
     id: "chat",
     title: "Chat",
     type: "item",
@@ -657,7 +665,7 @@ const navigationConfig = [
   //   type: "groupHeader",
   //   groupTitle: "PAGES"
   // },
-  
+
   // {
   //   id: "accountSettings",
   //   title: "Account Settings",
